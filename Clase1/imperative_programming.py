@@ -1,3 +1,50 @@
+# SOLUCIÓN COLABORATIVA HECHA EN CLASE
+
+def update_store(product: dict, units: int) -> dict:
+    if units <= 0:
+        raise ValueError("Unidades debe ser positivo")
+    product['current_stock'] -= units
+    return product
+
+def check_stock(product: dict, requested_units: int) -> tuple[bool, int]:
+    units_to_provide = requested_units
+    has_enough_stock = product["current_stock"] >= requested_units
+    if not has_enough_stock:
+        # Do not include any unit of this product in the order.
+        # This is a business decision: another option could be to include the available stock.
+        print(f"Error: Insufficient stock for {product['name']}. Available: {product['current_stock']}, Requested: {quantity}")
+        units_to_provide = product["current_stock"]
+         
+    return (has_enough_stock, units_to_provide)
+
+def process_orders(orders: list[dict], inventory: dict) -> None:
+    for order in orders:
+        order_id = order["order_id"]
+        items = order["items"]
+        total = 0
+        for sku, quantity in items.items():
+            product = inventory.get(sku)
+            if not product:
+                print(f"Error: Product with SKU {sku} not found.")
+                continue
+            has_stock, _ = check_stock(product, quantity)
+            if not has_stock:
+                continue
+            # Update stock
+            update_store(product, quantity)
+            total += product["price"] * quantity
+        print(f"Order ID: {order_id} - Total: ${total:.2f} - Purchase Completed")
+
+def show_inventory_report(inventory) -> None:
+    print("\nInventory Report:\n")
+    for product in inventory.values():
+        category_names = ", ".join([cat["name"] for cat in product["categories"]]) or "None"
+        tag_names = ", ".join([tag["name"] for tag in product["tags"]]) or "None"
+        print(f"Product: {product['name']} (SKU: {product['sku']}) - Price: ${product['price']:.2f}, Stock: {product['current_stock']}, Categories: [{category_names}], Tags: [{tag_names}]")
+
+
+# SCRIPT PRINCIPAL, YA CON FUNCIONES:
+
 # Categories management:
 categories = [
     {"name": "Electronics", "description": "Devices and gadgets"},
@@ -29,33 +76,6 @@ orders = [
     {"order_id": "ORDER003", "items": {"SKU456": 10, "SKU101": 2}}
 ]
 
-# Process orders:
-for order in orders:
-    order_id = order["order_id"]
-    items = order["items"]
-    total = 0
-    for sku, quantity in items.items():
-        product = inventory.get(sku)
-        if not product:
-            print(f"Error: Product with SKU {sku} not found.")
-            continue
-        if product["current_stock"] < quantity:
-            # Do not include any unit of this product in the order.
-            # This is a business decision: another option could be to include the available stock.
-            print(f"Error: Insufficient stock for {product['name']}. Available: {product['current_stock']}, Requested: {quantity}")
-            continue
-        # Update stock
-        product["current_stock"] -= quantity
-        total += product["price"] * quantity
-    print(f"Order ID: {order_id} - Total: ${total:.2f} - Purchase Completed")
-
+process_orders(orders, inventory)
 # Show inventory report after processing orders:
-def show_inventory_report(inventory) -> None:
-    print("\nInventory Report:\n")
-    for product in inventory.values():
-        category_names = ", ".join([cat["name"] for cat in product["categories"]]) or "None"
-        tag_names = ", ".join([tag["name"] for tag in product["tags"]]) or "None"
-        print(f"Product: {product['name']} (SKU: {product['sku']}) - Price: ${product['price']:.2f}, Stock: {product['current_stock']}, Categories: [{category_names}], Tags: [{tag_names}]")
-
 show_inventory_report(inventory)
-        
