@@ -50,3 +50,6 @@ print(suma_uno("5"))
 # En Python, cómo es la documentación? -->
 # docstrings, con triples comillas. Dentro de ello,
 # hay estándares para documentar parámetros, tipos devueltos...
+
+# __repr__, __str__, __eq__
+# Métodos dunder, D (double) UNDERscore, "internos" de Python.

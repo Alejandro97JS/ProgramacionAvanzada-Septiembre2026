@@ -49,9 +49,20 @@ class Product:
         tags = ', '.join([tag.name for tag in self.tags]) or 'None'
         return f"Product: {self.name} (SKU: {self.sku}) - Price: ${self.price:.2f}, Stock: {self.current_stock}, Categories: [{categories}], Tags: [{tags}]"
 
+    def can_buy(self):
+        return True
+
     def __repr__(self):
         return f"Product(name='{self.name}', sku='{self.sku}', price={self.price}, current_stock={self.current_stock})"
 
+
+class PremiumProduct(Product):
+
+    def can_buy(self, person_name=""):
+        if person_name == "Johnyy Depp":
+            return True
+        else:
+            return super().can_buy() # Delego a lo que me diga la clase padre.
 
 class Inventory:
     def __init__(self):
