@@ -34,6 +34,12 @@ Preguntas del Trivial.
 
 ## 5. Libros - Open Library Books API
 
-Datos sobre libros.
+Datos sobre libros: búsqueda por ISBN (Books API) y búsqueda por tema (Search API).
+
+> ⚠️ El endpoint `/api/books` está marcado como *legacy* en la documentación oficial y podría retirarse en el futuro. Las alternativas recomendadas son la Search API o `/isbn/{isbn}.json`.
+>
+> Límite de uso: 1 petición/segundo sin identificarse, o 3 peticiones/segundo enviando una cabecera `User-Agent` con el nombre de la aplicación y un email de contacto.
 
 🔗 URL: [https://openlibrary.org/dev/docs/api/books](https://openlibrary.org/dev/docs/api/books)
+
+🔗 Search API: [https://openlibrary.org/dev/docs/api/search](https://openlibrary.org/dev/docs/api/search)

@@ -1,5 +1,6 @@
 """
 https://openlibrary.org/dev/docs/api/books
+https://openlibrary.org/dev/docs/api/search
 
 This script makes several calls to the Open Library API to:
 1. Look up books by ISBN using the Books API
@@ -16,12 +17,12 @@ SEARCH_URL = "https://openlibrary.org/search.json"
 
 # A selection of well-known ISBNs to look up
 ISBNS = {
-    "978-0-13-468599-1": "The Pragmatic Programmer",
+    "978-0-13-595705-9": "The Pragmatic Programmer",
     "978-0-596-00712-6": "Head First Design Patterns",
     "978-0-201-63361-0": "Design Patterns (GoF)",
     "978-0-13-235088-4": "Clean Code",
     "978-0-596-51774-8": "JavaScript: The Good Parts",
-    "978-0-59-651798-4": "Learning Python",
+    "978-1-4493-5573-9": "Learning Python",
 }
 
 SEARCH_TOPICS = ["artificial intelligence", "machine learning"]
@@ -47,7 +48,8 @@ def lookup_by_isbn(isbn: str) -> dict | None:
     book = data[key]
     return {
         "title": book.get("title", "Unknown"),
-        "authors": [a["name"] for a in book.get("authors", [])],
+        # Open Library sometimes repeats the same author, so remove duplicates
+        "authors": list(dict.fromkeys(a["name"] for a in book.get("authors", []))),
         "publishers": [p["name"] for p in book.get("publishers", [])],
         "publish_date": book.get("publish_date", "Unknown"),
         "pages": book.get("number_of_pages", 0),
@@ -70,7 +72,7 @@ def search_books(query: str, limit: int = 5) -> list[dict]:
     for doc in data.get("docs", []):
         results.append({
             "title": doc.get("title", "Unknown"),
-            "authors": doc.get("author_name", ["Unknown"]),
+            "authors": list(dict.fromkeys(doc.get("author_name", ["Unknown"]))),
             "year": doc.get("first_publish_year", None),
             "pages": doc.get("number_of_pages_median", None),
             "subjects": doc.get("subject", [])[:5],
