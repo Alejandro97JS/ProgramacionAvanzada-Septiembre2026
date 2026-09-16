@@ -139,6 +139,7 @@ celerybeat.pid
 .envrc
 .venv
 env/
+env_clases_pontia/
 venv/
 ENV/
 env.bak/
