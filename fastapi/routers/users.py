@@ -23,7 +23,7 @@ console_handler.setFormatter(logging.Formatter(
 if not any(isinstance(handler, logging.StreamHandler) for handler in log.handlers):
     log.addHandler(console_handler)
 
-router = APIRouter()
+router = APIRouter(tags=["users"])
 
 # Entity User
 class User(BaseModel):
