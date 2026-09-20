@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-router = APIRouter()
+router = APIRouter(prefix='/products')
 
 products_list = [
     "Teclado Mecánico Xtreme",
@@ -10,11 +10,11 @@ products_list = [
     "Monitor UltraWide Vision"
 ]
 
-@router.get("/products")
+@router.get("/")
 async def products():
     return products_list
 
-@router.get("/products/{id}")
+@router.get("/{id}")
 async def products(id:int):
     l = len(products_list)
     print(f"list len {l}")
