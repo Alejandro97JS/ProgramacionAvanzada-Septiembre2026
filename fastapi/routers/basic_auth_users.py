@@ -1,9 +1,9 @@
 from re import search
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, APIRouter, HTTPException, status
 from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, oauth2
 
-app = FastAPI()
+router = APIRouter(prefix="/b_auth")
 
 #Instancia del sistema de autenticación
 oauth2 = OAuth2PasswordBearer(
@@ -63,8 +63,8 @@ async def current_user(token:str = Depends(oauth2)):
 
 
 
-@app.post("/login")
-async def login(form: OAuth2PasswordRequestForm = Depends()):
+@router.post("/login")
+async def login(form: OAuth2PasswordRequestForm = Depends()): # epends() vacío no significa “no dependas de nada”. Significa: usa como dependencia la clase del type hint, es decir, OAuth2PasswordRequestForm 
     user_db = users_db.get(form.username)
     if not user_db:
         raise HTTPException(status_code=400, detail="User not found")
@@ -76,6 +76,6 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
     #este token debe guardarlo el que intenta iniciar sesión, porque sera lo que use para ser autorizado
     return {"access_token": user.username, "token_type": "bearer"}
 
-@app.get("/users/me")
+@router.get("/users/me")
 async def me(user:User = Depends(current_user)):
     return user
