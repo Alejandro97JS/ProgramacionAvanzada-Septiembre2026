@@ -1,8 +1,20 @@
 from fastapi import FastAPI
 from routers import products, users, basic_auth_users, jwt_auth_users
 from fastapi.staticfiles import StaticFiles
+from data.db import UserSqlModel, create_db_and_tables, get_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from contextlib import asynccontextmanager
 
-app = FastAPI()
+# Esta función se ejecuta automáticamente durante el ciclo de vida de la aplicación FastAPI.
+# Sirve para crear las tablas en la base de datos antes de que la app empiece a aceptar peticiones.
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await create_db_and_tables()
+    yield
+
+# Se pasa la función lifespan al router para asegurar que las tablas de la base de datos
+# se creen automáticamente antes de que la aplicación empiece a aceptar peticiones.
+app = FastAPI(lifespan=lifespan)
 
 # Añadir routers
 app.include_router(products.router)

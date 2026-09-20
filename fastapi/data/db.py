@@ -16,7 +16,7 @@ async def create_db_and_tables():
     Crea la base de datos y todas las tablas definidas en los modelos.
     """
     async with engine.begin() as conn:
-        await conn.run_sync(DeclarativeBase.metadata.create_all)
+        await conn.run_sync(Base.metadata.create_all)
 
 
 async def get_db()->AsyncGenerator[AsyncSession, None]:
@@ -26,7 +26,10 @@ async def get_db()->AsyncGenerator[AsyncSession, None]:
     async with async_session() as session:
         yield session
 
-class UserSqlModel(DeclarativeBase):
+class Base(DeclarativeBase):   # 1) creas TU base (vacía)
+    pass
+
+class UserSqlModel(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
