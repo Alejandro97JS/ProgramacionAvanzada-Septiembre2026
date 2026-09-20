@@ -1,6 +1,8 @@
 from fastapi import APIRouter, HTTPException
 
-router = APIRouter(prefix='/products')
+router = APIRouter(prefix='/products',
+                    tags=["products"]   # Esto es para agrupar este router en la documentation de swager
+                    )
 
 products_list = [
     "Teclado Mecánico Xtreme",
