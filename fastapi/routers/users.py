@@ -1,5 +1,5 @@
 from ast import List
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import logging
 
@@ -23,7 +23,7 @@ console_handler.setFormatter(logging.Formatter(
 if not any(isinstance(handler, logging.StreamHandler) for handler in log.handlers):
     log.addHandler(console_handler)
 
-app = FastAPI()
+router = APIRouter()
 
 # Entity User
 class User(BaseModel):
@@ -76,17 +76,17 @@ def search_user(user:User):
     matches = list(filter(lambda u: u.id == user.id, users_list))
     return matches[0] if matches else None
 
-@app.get("/users_json")
+@router.get("/users_json")
 async def users_json():
     return [{"name":"david", "surname":"dorado","url":"http://localhost:8000/users/1","age":20},
             {"name":"francisco", "surname":"dorado","url":"http://localhost:8000/users/2","age":40},
             {"name":"Maria", "surname":"dorado","url":"http://localhost:8000/users/3","age":30}]
 
-@app.get("/users")
+@router.get("/users")
 async def users():
     return users_list[0]
 
-@app.get("/user/{id}")
+@router.get("/user/{id}")
 async def user(id:int):
     users = filter(lambda user: user.id == id, users_list)
     print(f"users type: {type(users)}")
@@ -98,7 +98,7 @@ async def user(id:int):
         return {"error":"No se ha encontrado el usuario"}
 
 #esta es la misma operación que el de arriba pero este funciona por query
-@app.get("/user/")
+@router.get("/user/")
 async def user(id:int):
     users = filter(lambda user: user.id == id, users_list)
     print(f"users type: {type(users)}")
@@ -111,7 +111,7 @@ async def user(id:int):
 
 
 # Crear un usuario con POST
-@app.post("/user/", response_model= User, status_code=201)
+@router.post("/user/", response_model= User, status_code=201)
 async def create_user(user:User):
     found = search_user(user)
     if found is None:
@@ -123,7 +123,7 @@ async def create_user(user:User):
     raise HTTPException(status_code=400, detail=error)
 
 # Actualizar usuario completo con PUT
-@app.put("/user/")
+@router.put("/user/")
 async def update_user(user:User):
     found = False
 
@@ -139,7 +139,7 @@ async def update_user(user:User):
         return {"error":"No se ha encontrado el usuario"}
 
 # Eliminar usuario
-@app.delete("/user/{id}", status_code=200)
+@router.delete("/user/{id}", status_code=200)
 async def delete_user(id:int):
     found = False
     for index, u in enumerate(users_list):
