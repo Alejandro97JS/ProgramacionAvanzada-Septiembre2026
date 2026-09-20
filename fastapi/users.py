@@ -11,7 +11,17 @@ logging.basicConfig(
     datefmt="[%Y-%m-%d %H:%M:%S]"
 )
 
-log = logging.getLogger("uvicorn")
+log = logging.getLogger(__name__)
+
+# Add a handler to also print log to the terminal/console
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(logging.Formatter(
+    "%(asctime)s | %(levelname)s | %(name)s | %(message)s", 
+    datefmt="[%Y-%m-%d %H:%M:%S]"
+))
+if not any(isinstance(handler, logging.StreamHandler) for handler in log.handlers):
+    log.addHandler(console_handler)
 
 app = FastAPI()
 
