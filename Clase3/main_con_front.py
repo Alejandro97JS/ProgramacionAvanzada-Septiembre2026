@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from html import escape
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
@@ -27,9 +28,19 @@ class User(BaseModel):
                 raise ValueError("You must provide a username longer than 20 chars")
         return instance
 
+LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# Los WARNING (y superiores) se guardan además en un .txt junto a este fichero
+warnings_file_handler = logging.FileHandler(
+    Path(__file__).parent / "warnings.txt", encoding="utf-8"
+)
+warnings_file_handler.setLevel(logging.WARNING)
+warnings_file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+
 logging.basicConfig(
     level=logging.INFO,  # DEBUG, INFO, WARNING, ERROR, CRITICAL
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    format=LOG_FORMAT,
+    handlers=[logging.StreamHandler(), warnings_file_handler],
 )
 
 logger = logging.getLogger(__name__)
