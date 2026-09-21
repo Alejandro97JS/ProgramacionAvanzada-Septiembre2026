@@ -2,7 +2,7 @@ import logging
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from typing import Optional
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import field_validator, model_validator
 
 class User(BaseModel):
     username: str = Field(..., min_length=3, description="Nombre de usuario (mínimo 3 caracteres)")
@@ -18,9 +18,13 @@ class User(BaseModel):
 
     @model_validator(mode="after")
     def long_username_if_age_ge_50(cls, instance):
-        if instance.age >= 50:
+        if instance.age is None or instance.age >= 50:
+            if instance.age is None:
+                hint = "No has indicado la edad."
+            else:
+                hint = "Eres mayor de 50."
             if len(instance.username) < 20:
-                raise ValueError("You must provide a username longer than 20 chars")
+                raise ValueError(f"{hint} Por tanto, debes indicar un username de más de 20 chars")
         return instance
 
 logging.basicConfig(
@@ -36,18 +40,34 @@ app = FastAPI(
     version="1.0.0"
 )
 
+@app.get("/")
+def root_endpoint():
+    logger.info("Alguien ha entrado a la página raíz")
+    return {"msg": "El servidor está levantado bien!"}
+
 @app.get("/hello")
 def initial_greeting():
     logger.info("Recibida petición al saludo genérico")
     return {"msg": "Hola mundo!!!"}
 
+class NameProcessor:
+
+    def __init__(self, name):
+        self.name = name
+
+    def get_name_upper(self):
+        return self.name.upper()
+
+    def get_reversed_name(self):
+        return self.name[::-1] # juan --> nauj
+
 @app.get("/hello/{name}")
 def custom_greeting(name:str):
     logger.info(f"Recibida petición al saludo personalizado para {name}")
-    processed_name = name.capitalize()
-    logger.info(f"Nombre tras .capitalize(): {processed_name}")
-    if processed_name == "Pepe":
-        logger.warning("Pepe ha entrado a la web!!")
+    processed_name = NameProcessor(name).get_name_upper()
+    logger.info(f"Nombre tras procesamiento: {processed_name}")
+    if processed_name == name:
+        logger.warning("Alguien que ya tenía el nombre entero en mayús ha entrado a la web!!")
     return {"msg": f"Hello, {processed_name}!!!"}
 
 @app.post("/users/")
@@ -56,5 +76,5 @@ def create_user(user: User):
     ... # Registrarlo en DB...
     return {
         "msg": "Usuario registrado correctamente",
-        "usuario": user.username
+        "usuario": user
     }
