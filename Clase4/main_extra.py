@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from sqlalchemy import Column, Float, ForeignKey, Integer, String, UniqueConstraint, create_engine
+from sqlalchemy import Column, Float, ForeignKey, Integer, String, UniqueConstraint, create_engine, or_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
@@ -49,7 +49,6 @@ class OrderDB(Base):
     price = Column(Float, nullable=False)
 
     user = relationship("UserDB", back_populates="orders")
-
 
 Base.metadata.create_all(bind=engine)
 
@@ -267,8 +266,8 @@ def create_order(order: Order):
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
     existing = db.query(OrderDB).filter(
-        OrderDB.user_id == order.user_id,
-        OrderDB.product == order.product
+            OrderDB.user_id == order.user_id,
+            OrderDB.product == order.product
     ).first()
     if existing:
         db.close()
@@ -308,17 +307,9 @@ def get_user_orders(user_id: int):
         db.close()
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-    orders = db.query(OrderDB).filter(OrderDB.user_id == user_id).all()
+    # orders = db.query(OrderDB).filter(OrderDB.user_id == user_id).all()
     db.close()
     return {
         "user": user.username,
-        "orders": [
-            {
-                "id": o.id,
-                "product": o.product,
-                "quantity": o.quantity,
-                "price": o.price
-            }
-            for o in orders
-        ]
+        "orders": user.orders
     }

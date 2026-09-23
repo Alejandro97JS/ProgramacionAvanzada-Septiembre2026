@@ -233,10 +233,13 @@ def initial_greeting():
 
 @app.get("/hello/{name}")
 def custom_greeting(name: str):
+    time_start = time.perf_counter()
     logger.info(f"Recibida petición al saludo personalizado para {name}")
     processed_name = name.capitalize()
     if processed_name == "Pepe":
         logger.warning("Pepe ha entrado a la web!!")
+    time_end = time.perf_counter()
+    logger.info(f"Ha tardado {time_end-time_start}")
     return {"msg": f"Hello, {processed_name}!!!"}
 
 def enviar_email_bienvenida(email: str):
@@ -277,6 +280,11 @@ def enviar_email_cambios(email: str, cambios: dict):
     logger.info(f"📧 Simulando aviso de cambios a {email}: {cambios}")
     time.sleep(5)  # Simular retardo para ver la asincronía
     logger.info(f"✅ Aviso de cambios enviado a {email}")
+
+@app.post("/login") # Example of SQL Injection
+def login(UserDataLogin):
+    # db.execute("SELECT * FROM USUARIOS WHERE USUARIO = {} AND PASSWORD = {}")
+    "SELECT * FROM USUARIOS"
 
 @app.patch("/users/{user_id}")
 def update_user(

@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy import Column, Integer, String, Boolean, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -32,6 +32,8 @@ class UserDB(Base):
     username = Column(String, index=True)
     email = Column(String, unique=True, index=True)
     age = Column(Integer, nullable=True)
+    is_adult = Column(Boolean, nullable=True)
+    color = Column(String, nullable=True)
 
 Base.metadata.create_all(bind=engine)
 
@@ -203,27 +205,26 @@ def enviar_email_bienvenida(email: str):
 @app.post("/users/")
 def create_user(user: User, background_tasks: BackgroundTasks):
     logger.info(f"📥 Registro de usuario recibido: {user}")
-    
     db = SessionLocal()
     existing = db.query(UserDB).filter(UserDB.email == user.email).first()
+    # "SELECT * FROM users WHERE email={} LIMIT 1"
     if existing:
         db.close()
         raise HTTPException(status_code=400, detail="El email ya está registrado")
-
-    user_db = UserDB(username=user.username, email=user.email, age=user.age)
-    db.add(user_db)
-    db.commit()
-    db.refresh(user_db)
-    db.close()
-    logger.info(f"✅ Usuario guardado en DB: {user_db.username}")
-    # Tarea en segundo plano
-    background_tasks.add_task(enviar_email_bienvenida, user.email)
-    return {
-        "msg": "Usuario registrado correctamente",
-        "usuario": {
-            "id": user_db.id,
-            "username": user_db.username,
-            "email": user_db.email,
-            "age": user_db.age
+    else:
+        user_db = UserDB(username=user.username, 
+                         email=user.email, age=user.age, color=None,
+                         is_adult=user.age >= 18)
+        db.add(user_db)
+        db.commit()
+        user_db.color = "Verde" if user_db.id % 2 == 0 else "Azul"
+        db.commit()
+        db.refresh(user_db)
+        db.close()
+        logger.info(f"✅ Usuario guardado en DB: {user_db.username}")
+        # Tarea en segundo plano
+        background_tasks.add_task(enviar_email_bienvenida, user.email)
+        return {
+            "msg": "Usuario registrado correctamente",
+            "usuario": user_db
         }
-    }
